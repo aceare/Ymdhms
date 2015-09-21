@@ -1,10 +1,5 @@
 package com.aceare.ymdhms;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.v4.app.Fragment;
@@ -25,9 +20,6 @@ public class MainActivityFragment extends Fragment {
 
     private static final String LOG_TAG = MainActivityFragment.class.getSimpleName();
     ViewHolder mViewHolder = null;
-    AlarmManager mAlarmManager = null;
-    PendingIntent mPendingIntent = null;
-    private static MainActivityFragment mFragmentInstance;
 
     public MainActivityFragment() {
     }
@@ -49,22 +41,20 @@ public class MainActivityFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-Log.v(LOG_TAG, "onCreate()" + " mFragmentInstance==" + mFragmentInstance);
-        mFragmentInstance = this;
+Log.v(LOG_TAG, "onCreate()");
         super.onCreate(savedInstanceState);
     }
 
     @Override
     public void onDestroy() {
-Log.v(LOG_TAG, "onDestroy()" + " mFragmentInstance==" + mFragmentInstance);
-        mFragmentInstance = null;
+Log.v(LOG_TAG, "onDestroy()");
         super.onDestroy();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-Log.v(LOG_TAG, "onCreateView()" + " mFragmentInstance==" + mFragmentInstance);
+Log.v(LOG_TAG, "onCreateView()");
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         mViewHolder = new ViewHolder(rootView); // TODO: when to free/destroy?
         return rootView;
@@ -72,7 +62,7 @@ Log.v(LOG_TAG, "onCreateView()" + " mFragmentInstance==" + mFragmentInstance);
 
     @Override
     public void onDestroyView() {
-        Log.v(LOG_TAG, "onDestroyView()" + " mFragmentInstance==" + mFragmentInstance);
+        Log.v(LOG_TAG, "onDestroyView()");
         super.onDestroyView();
 //        mViewHolder = null;
 /** After onDestroyView(), pause/resume are called without calling onCreateView()!!
@@ -80,39 +70,11 @@ Log.v(LOG_TAG, "onCreateView()" + " mFragmentInstance==" + mFragmentInstance);
  */
     }
 
-    public void updateView(String dayofweek) {
-Log.v(LOG_TAG, dayofweek + " mViewHolder==" + mViewHolder);
-        if (null != mViewHolder) {
-            mViewHolder.dayofweek.setText(dayofweek);
-            getFragmentManager().beginTransaction()
-                    .detach(this)
-                    .attach(this)
-                    .commit();
-        }
-    }
-
-
-    public static class AlarmReceiver extends BroadcastReceiver {
-        public void onReceive(Context context, Intent intent) {
-            long currentTime = System.currentTimeMillis();
-            String dayofweek = "T " + currentTime;
-            Log.v(LOG_TAG, dayofweek);
-Log.v(LOG_TAG, dayofweek + " mFragmentInstance==" + mFragmentInstance);
-            if (null != mFragmentInstance) {
-                mFragmentInstance.updateView(dayofweek);
-            }
-        }
-    }
-
     @Override
     public void onResume() {
-        Context context = getActivity();
-        mAlarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Intent alarmIntent = new Intent(context, AlarmReceiver.class);
-        mPendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, 0); //PendingIntent.FLAG_ONE_SHOT);
         // Set the AlarmManager based on locale clock.
 //tmptmp        mAlarmManager.setRepeating(AlarmManager.RTC, System.currentTimeMillis(), 1000, mPendingIntent);
-Log.v(LOG_TAG, "onResume()" + " mFragmentInstance==" + mFragmentInstance + " mAlarmManager==" + mAlarmManager + " mPendingIntent==" + mPendingIntent);
+Log.v(LOG_TAG, "onResume()");
 
 /*
         mViewHolder.chrono.setBase(
@@ -145,25 +107,20 @@ Log.v(LOG_TAG, "onResume()" + " mFragmentInstance==" + mFragmentInstance + " mAl
 
     @Override
     public void onPause() {
-Log.v(LOG_TAG, "onPause()" + " mFragmentInstance==" + mFragmentInstance + " mAlarmManager==" + mAlarmManager + " mPendingIntent==" + mPendingIntent);
+Log.v(LOG_TAG, "onPause()");
         mViewHolder.chrono.stop();
-        if ((null != mAlarmManager) && (null != mPendingIntent)) {
-            mAlarmManager.cancel(mPendingIntent);
-            mAlarmManager = null;
-            mPendingIntent = null;
-        }
         super.onPause();
     }
 
     @Override
     public void onStart() {
-        Log.v(LOG_TAG, "onStart()" + " mFragmentInstance==" + mFragmentInstance);
+        Log.v(LOG_TAG, "onStart()");
         super.onStart();
     }
 
     @Override
     public void onStop() {
-        Log.v(LOG_TAG, "onStop()" + " mFragmentInstance==" + mFragmentInstance);
+        Log.v(LOG_TAG, "onStop()");
         super.onStop();
     }
 

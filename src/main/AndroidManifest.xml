@@ -17,9 +17,6 @@
             </intent-filter>
         </activity>
 
-        <receiver
-            android:name=".MainActivityFragment$AlarmReceiver"
-            android:enabled="true"/>
     </application>
 
 </manifest>
