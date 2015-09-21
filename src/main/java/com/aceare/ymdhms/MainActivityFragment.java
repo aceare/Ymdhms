@@ -6,12 +6,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Chronometer;
 import android.widget.TextView;
+
+import java.util.Calendar;
 
 
 /**
@@ -30,11 +34,13 @@ public class MainActivityFragment extends Fragment {
 
     private final String VIEW_HOLDER = "VIEW_HOLDER";
     private class ViewHolder {
+        public final Chronometer chrono;
         public final TextView hms;
         public final TextView dayofweek;
         public final TextView dmy;
 
         ViewHolder(View view) {
+            chrono      = (Chronometer) view.findViewById(R.id.chrono);
             hms         = (TextView) view.findViewById(R.id.hms);
             dayofweek   = (TextView) view.findViewById(R.id.dayofweek);
             dmy         = (TextView) view.findViewById(R.id.dmy);
@@ -105,8 +111,34 @@ Log.v(LOG_TAG, dayofweek + " mFragmentInstance==" + mFragmentInstance);
         Intent alarmIntent = new Intent(context, AlarmReceiver.class);
         mPendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, 0); //PendingIntent.FLAG_ONE_SHOT);
         // Set the AlarmManager based on locale clock.
-        mAlarmManager.setRepeating(AlarmManager.RTC, System.currentTimeMillis(), 1000, mPendingIntent);
+//tmptmp        mAlarmManager.setRepeating(AlarmManager.RTC, System.currentTimeMillis(), 1000, mPendingIntent);
 Log.v(LOG_TAG, "onResume()" + " mFragmentInstance==" + mFragmentInstance + " mAlarmManager==" + mAlarmManager + " mPendingIntent==" + mPendingIntent);
+
+/*
+        mViewHolder.chrono.setBase(
+                        (calendar.get(Calendar.HOUR_OF_DAY) * 60 * 60 * 1000) +
+                        (calendar.get(Calendar.MINUTE) * 60 * 1000) +
+                        (calendar.get(Calendar.SECOND) * 1000) +
+                        calendar.get(Calendar.MILLISECOND));
+*/
+//        mViewHolder.chrono.setBase(System.currentTimeMillis() - SystemClock.elapsedRealtime());
+//        mViewHolder.chrono.setBase(-(60*60*1000));
+
+        long elapsedTime = SystemClock.elapsedRealtime();
+        Calendar calendar = Calendar.getInstance();
+        long currTimeInMilli = (calendar.get(Calendar.HOUR_OF_DAY) * 60 * 60 * 1000) +
+                (calendar.get(Calendar.MINUTE) * 60 * 1000) +
+                (calendar.get(Calendar.SECOND) * 1000) +
+                calendar.get(Calendar.MILLISECOND);
+        // The value set as setBase is *subtracted* from the chronoBase and that time is shown by Chronometer.
+        // Thus, setBase(SystemClock.elapsedRealtime()) sets the clock to 00:00.
+        // elapsedTime = 3:00                       Clock (currTime)
+        //   setBase(elapsedTime) -> 3:00 - 03:00 = 00:00
+        //   setBase(01:00)       -> 3:00 - 01:00 = 02:00
+        //   setBase(-01:00)      -> 3:00 + 01:00 = 04:00
+        //  baseToSet = elapsedTime - currTime
+        mViewHolder.chrono.setBase(elapsedTime - currTimeInMilli);
+        mViewHolder.chrono.start();
 
         super.onResume();
     }
@@ -114,6 +146,7 @@ Log.v(LOG_TAG, "onResume()" + " mFragmentInstance==" + mFragmentInstance + " mAl
     @Override
     public void onPause() {
 Log.v(LOG_TAG, "onPause()" + " mFragmentInstance==" + mFragmentInstance + " mAlarmManager==" + mAlarmManager + " mPendingIntent==" + mPendingIntent);
+        mViewHolder.chrono.stop();
         if ((null != mAlarmManager) && (null != mPendingIntent)) {
             mAlarmManager.cancel(mPendingIntent);
             mAlarmManager = null;
