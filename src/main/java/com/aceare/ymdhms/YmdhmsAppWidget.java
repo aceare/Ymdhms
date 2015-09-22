@@ -8,11 +8,10 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.os.SystemClock;
 import android.util.Log;
 import android.widget.RemoteViews;
 
-import java.util.Calendar;
+import java.text.DateFormat;
 
 
 /**
@@ -42,7 +41,7 @@ public class YmdhmsAppWidget extends AppWidgetProvider {
         // Enter relevant functionality for when the first widget is created
 Log.v(LOG_TAG, "onEnabled");
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.setRepeating(AlarmManager.RTC, System.currentTimeMillis(), 5*1000, createAlarmPendingIntent(context));
+        alarmManager.setRepeating(AlarmManager.RTC, System.currentTimeMillis(), 1000, createAlarmPendingIntent(context));
     }
 
     @Override
@@ -74,29 +73,13 @@ Log.v(LOG_TAG, dayofweek);
                                 int appWidgetId) {
 Log.v(LOG_TAG, "updateAppWidget(): appWidgetId=" + appWidgetId);
 
-        //CharSequence widgetText = context.getString(R.string.appwidget_text);
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.ymdhms_app_widget);
 
-        Calendar calendar = Calendar.getInstance();
-        long elapsedTime = SystemClock.elapsedRealtime();
-        long curr24HrTimeInMilli = (calendar.get(Calendar.HOUR_OF_DAY) * 60 * 60 * 1000) +
-                (calendar.get(Calendar.MINUTE) * 60 * 1000) +
-                (calendar.get(Calendar.SECOND) * 1000) +
-                calendar.get(Calendar.MILLISECOND);
-        /**
-            The value set as setBase is *subtracted* from the chronoBase and that time is shown by Chronometer.
-            Thus, setBase(SystemClock.elapsedRealtime()) sets the clock to 00:00.
-            elapsedTime = 3:00                         Clock (currTime)
-                setBase(elapsedTime) -> 3:00 - 03:00 = 00:00
-                setBase(01:00)       -> 3:00 - 01:00 = 02:00
-                setBase(-01:00)      -> 3:00 + 01:00 = 04:00
-            baseToSet = elapsedTime - currTime
-        */
-        views.setChronometer(R.id.chrono, (elapsedTime - curr24HrTimeInMilli), null, true);
         long currentTimeInMilli = System.currentTimeMillis();
+        views.setTextViewText(R.id.hms, Utility.formatTime(currentTimeInMilli, DateFormat.DEFAULT));
         views.setTextViewText(R.id.dayofweek, Utility.formatDayName(currentTimeInMilli));
-        views.setTextViewText(R.id.dmy, Utility.formatDate(currentTimeInMilli));
+        views.setTextViewText(R.id.dmy, Utility.formatDate(currentTimeInMilli, DateFormat.DEFAULT));
 
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, views);
@@ -104,3 +87,16 @@ Log.v(LOG_TAG, "updateAppWidget(): appWidgetId=" + appWidgetId);
     }
 }
 
+/*
+DateFormat
+    SHORT       mm/dd/yy
+    MEDIUM      Mmm dd, yyyy                            (DEFAULT)
+    LONG        Mmmmm dd, yyyy
+    FULL        Ddddd, Mmmmm dd, yyyy
+
+TimeFormat
+    SHORT       hh:mm AM
+    MEDIUM      hh:mm:ss AM                             (DEFAULT)
+    LONG        hh:mm:ss AM GMT+05:30
+    FULL        hh:mm:ss AM Indian Standard Time
+*/
