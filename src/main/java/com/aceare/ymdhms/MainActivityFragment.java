@@ -55,6 +55,7 @@ Log.v(LOG_TAG, "onDestroy()");
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 Log.v(LOG_TAG, "onCreateView()");
+//        return super.onCreateView(inflater, container, savedInstanceState);
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         mViewHolder = new ViewHolder(rootView); // TODO: when to free/destroy?
         return rootView;

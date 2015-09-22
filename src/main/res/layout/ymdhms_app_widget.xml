@@ -1,0 +1,49 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="@dimen/widget_margin"
+                android:background="#09C">
+
+    <Chronometer
+        android:id="@+id/chrono"
+        android:text="11:11:11"
+        android:fontFamily="sans-serif"
+        android:textStyle="bold"
+        android:textAppearance="?android:textAppearanceLarge"
+        android:layout_width="100dp"
+        android:layout_height="40dp"
+        />
+
+    <TextView
+        android:id="@+id/dayofweek"
+        android:text="Monday"
+        android:layout_below="@+id/chrono"
+        android:layout_alignParentLeft="true"
+        android:paddingRight="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@+id/dmy"
+        android:text="31-Jan-2012"
+        android:layout_below="@+id/chrono"
+        android:layout_toRightOf="@+id/dayofweek"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+<!--
+    <TextView
+        android:id="@+id/appwidget_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:text="@string/appwidget_text"
+        android:textColor="#ffffff"
+        android:textSize="24sp"
+        android:textStyle="bold|italic"
+        android:layout_margin="8dp"
+        android:contentDescription="@string/appwidget_text"
+        android:background="#09C"/>
+-->
+</RelativeLayout>
