@@ -66,7 +66,7 @@ public class YmdhmsAppWidgetSettings extends Activity {
             finish();
         }
 
-        Log.v(LOG_TAG, "YmdhmsAppWidgetSettings: onCreate() finished. mAppWidgetId=" + appWidgetId);
+        Log.v(LOG_TAG, "YmdhmsAppWidgetSettings: onCreate() finished. mAppWidgetId=" + appWidgetId + ", context=" + this);
     }
 
     View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -80,7 +80,7 @@ public class YmdhmsAppWidgetSettings extends Activity {
                 appWidgetId = extras.getInt(
                         AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
             }
-Log.v(LOG_TAG, "onClick: appWidgetId=" + appWidgetId);
+Log.v(LOG_TAG, "onClick: appWidgetId=" + appWidgetId + ", this=" + context);
 
             // When the button is clicked, save options in our prefs
             savePrefHmsOptId(context, appWidgetId,
@@ -88,16 +88,28 @@ Log.v(LOG_TAG, "onClick: appWidgetId=" + appWidgetId);
             savePrefYmdOptId(context, appWidgetId,
                     ((RadioGroup)findViewById(R.id.ymd_opt_radiogroup)).getCheckedRadioButtonId());
 
-            // Push widget update to surface with newly set prefix
+            // update widget:
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
             YmdhmsAppWidgetProvider.updateAppWidget(context, appWidgetManager, appWidgetId);
-            // Make sure we pass back the original appWidgetId
             Intent resultValue = new Intent();
             resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
             setResult(RESULT_OK, resultValue);
             finish();
         }
     };
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        Bundle extras = intent.getExtras();
+        int appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
+        if (extras != null) {
+            appWidgetId = extras.getInt(
+                    AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+        }
+        Log.v(LOG_TAG, "YmdhmsAppWidgetSettings: onNewIntent() mAppWidgetId=" + appWidgetId + ", context=" + this);
+    }
 
     static final String getPrefWidgetResourceKey(Context context, int appWidgetId, int resourceId) {
         return "Widget" + appWidgetId + context.getString(resourceId);

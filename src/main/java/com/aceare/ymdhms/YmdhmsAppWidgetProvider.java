@@ -41,11 +41,16 @@ public class YmdhmsAppWidgetProvider extends AppWidgetProvider {
         for (int i = 0; i < N; i++) {
             updateAppWidget(context, appWidgetManager, appWidgetIds[i]);
         }
+        super.onUpdate(context, appWidgetManager, appWidgetIds);
     }
 
     @Override
     public void onDeleted(Context context, int[] appWidgetIds) {
-        Log.v(LOG_TAG, "onDeleted: appWidgetIds=" + appWidgetIds.toString());
+        String appWidgetIdList = "" + appWidgetIds[0];
+        for (int i = 1; i < appWidgetIds.length; i++) {
+            appWidgetIdList = appWidgetIdList + ", " + appWidgetIds[i];
+        }
+        Log.v(LOG_TAG, "onDeleted: appWidgetIds=" + appWidgetIdList);
         super.onDeleted(context, appWidgetIds);
     }
 
@@ -61,7 +66,7 @@ public class YmdhmsAppWidgetProvider extends AppWidgetProvider {
 Log.v(LOG_TAG, "onEnabled");
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.setRepeating(AlarmManager.RTC, System.currentTimeMillis(), 60*1000, createAlarmPendingIntent(context));
+//should trigger at clock 60 sec. alarmManager.setRepeating(AlarmManager.RTC, System.currentTimeMillis(), 60*1000, createAlarmPendingIntent(context));
     }
 
     @Override
@@ -95,7 +100,12 @@ Log.v(LOG_TAG, dayofweek);
         final Intent settingsActivityIntent = new Intent(context, YmdhmsAppWidgetSettings.class)
                 .putExtras(extras)
                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // in case activity is started outside of the context of an existing activity
-        final PendingIntent pendingIntent = PendingIntent.getActivity(context, 0,
+        // IMPORTANT: PendingIntent will be reused even if extras differ between the intents targeted for different instances of AppWidgets.
+        // This creates a problem by using latest extras (appWidgetId) for ALL previous and new instances of AppWidgets!!
+        // One option is to make Intent's Data unique by using toUri, effectively forcing creation of separate PendingIntents:
+        //    settingsActivityIntent.setData(Uri.parse(settingsActivityIntent.toUri(Intent.URI_INTENT_SCHEME)));
+        // Another better/cleaner solution is to unique requestCode for creating unique PendingIntents for each AppWidget.
+        final PendingIntent pendingIntent = PendingIntent.getActivity(context, appWidgetId, // use unique request code to create unique PendingIntents
                 settingsActivityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         return pendingIntent;
     }
