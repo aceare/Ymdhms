@@ -17,25 +17,10 @@
         android:layout_height="wrap_content"/>
 
     <TextView
-        android:id="@+id/dayofweek"
-        android:text="Monday"
-        android:layout_below="@+id/hms"
-        android:layout_alignParentLeft="true"
-        android:paddingRight="4dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <TextView
         android:id="@+id/dmy"
         android:text="31-Jan-2012"
+        android:layout_alignParentLeft="true"
         android:layout_below="@+id/hms"
-        android:layout_toRightOf="@+id/dayofweek"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <TextView
-        android:text="dummy msg"
-        android:layout_below="@+id/dmy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 

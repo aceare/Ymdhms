@@ -29,11 +29,7 @@
         <receiver
             android:name=".YmdhmsAppWidgetProvider$AlarmReceiver"
             android:enabled="true"/>
-        <activity android:name=".YmdhmsAppWidgetConfigure">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
-            </intent-filter>
-        </activity>
+        <activity android:name=".YmdhmsAppWidgetSettings"/>
 
     </application>
 

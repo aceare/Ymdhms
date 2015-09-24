@@ -12,7 +12,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.RemoteViews;
 
-import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 
 /**
@@ -21,25 +21,18 @@ import java.text.DateFormat;
 public class YmdhmsAppWidgetProvider extends AppWidgetProvider {
 
     private static final String LOG_TAG = YmdhmsAppWidgetProvider.class.getSimpleName();
-    private static final String WIDGET_CLICK_ACTION = "com.aceare.ymdhms.WIDGET_CLICK";
 
+    /*
     @Override
     public void onReceive(Context context, Intent intent) {
         final String action = intent.getAction();
-Log.v(LOG_TAG, "onReceive action=" + action);
-final int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
-    AppWidgetManager.INVALID_APPWIDGET_ID);
-Log.v(LOG_TAG, "appWidgetId=" + appWidgetId);
-
-        if (action.equals(WIDGET_CLICK_ACTION)) {
-            Intent configIntent = new Intent(context, YmdhmsAppWidgetConfigure.class)
-                    .putExtras(intent.getExtras())                  // pass parameters as-is
-                    .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);       /// TODO: check??
-            context.startActivity(configIntent);
-        }
+        final int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
+                    AppWidgetManager.INVALID_APPWIDGET_ID);
+        Log.v(LOG_TAG, "onReceive action=" + action + ", appWidgetId=" + appWidgetId);
 
         super.onReceive(context, intent);
     }
+*/
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -48,6 +41,12 @@ Log.v(LOG_TAG, "appWidgetId=" + appWidgetId);
         for (int i = 0; i < N; i++) {
             updateAppWidget(context, appWidgetManager, appWidgetIds[i]);
         }
+    }
+
+    @Override
+    public void onDeleted(Context context, int[] appWidgetIds) {
+        Log.v(LOG_TAG, "onDeleted: appWidgetIds=" + appWidgetIds.toString());
+        super.onDeleted(context, appWidgetIds);
     }
 
     private PendingIntent createAlarmPendingIntent(Context context) {
@@ -62,7 +61,7 @@ Log.v(LOG_TAG, "appWidgetId=" + appWidgetId);
 Log.v(LOG_TAG, "onEnabled");
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-//        alarmManager.setRepeating(AlarmManager.RTC, System.currentTimeMillis(), 1000, createAlarmPendingIntent(context));
+        alarmManager.setRepeating(AlarmManager.RTC, System.currentTimeMillis(), 60*1000, createAlarmPendingIntent(context));
     }
 
     @Override
@@ -90,6 +89,17 @@ Log.v(LOG_TAG, dayofweek);
         }
     }
 
+    private static PendingIntent createSettingsActivityPendingIntent(Context context, int appWidgetId) {
+        final Bundle extras = new Bundle();
+        extras.putInt(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+        final Intent settingsActivityIntent = new Intent(context, YmdhmsAppWidgetSettings.class)
+                .putExtras(extras)
+                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // in case activity is started outside of the context of an existing activity
+        final PendingIntent pendingIntent = PendingIntent.getActivity(context, 0,
+                settingsActivityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return pendingIntent;
+    }
+
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
                                 int appWidgetId) {
 Log.v(LOG_TAG, "updateAppWidget(): appWidgetId=" + appWidgetId);
@@ -97,67 +107,73 @@ Log.v(LOG_TAG, "updateAppWidget(): appWidgetId=" + appWidgetId);
         // Construct the RemoteViews object
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.ymdhms_app_widget);
 
-Bundle extras = new Bundle();
-extras.putInt(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-
-/*
-// WORKS:
-// Bind the click intent on the whole widget
-final Intent clickIntent = new Intent(context, YmdhmsAppWidgetProvider.class);
-clickIntent.setAction(YmdhmsAppWidgetProvider.WIDGET_CLICK_ACTION)
-        .putExtras(extras);
-final PendingIntent clickPendingIntent = PendingIntent.getBroadcast(context, 0,
-        clickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-views.setOnClickPendingIntent(R.id.widget, clickPendingIntent);
-*/
-
-
-// WORKS:
-// Bind the click intent on the whole widget
-final Intent clickIntent = new Intent(context, YmdhmsAppWidgetConfigure.class)
-        .putExtras(extras)
-        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); // in case activity is started outside of the context of an existing activity
-final PendingIntent clickPendingIntent = PendingIntent.getActivity(context, 0,
-        clickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-views.setOnClickPendingIntent(R.id.widget, clickPendingIntent);
-
-
         long currentTimeInMilli = System.currentTimeMillis();
-        views.setTextViewText(R.id.hms, Utility.formatTime(currentTimeInMilli, DateFormat.DEFAULT));
-        views.setTextViewText(R.id.dayofweek, Utility.formatDayName(currentTimeInMilli));
-        views.setTextViewText(R.id.dmy, Utility.formatDate(currentTimeInMilli, DateFormat.DEFAULT));
+        views.setTextViewText(R.id.hms, formatTime(currentTimeInMilli,
+                YmdhmsAppWidgetSettings.readPrefHmsOptId(context, appWidgetId)));
+        views.setTextViewText(R.id.dmy, formatDate(currentTimeInMilli,
+                YmdhmsAppWidgetSettings.readPrefYmdOptId(context, appWidgetId)));
+
+        // Would RemoteViewsService (Android 3.0) be useful to set this up only once on creation?
+        final PendingIntent settingsActivityIntent = createSettingsActivityPendingIntent(context, appWidgetId);
+        views.setOnClickPendingIntent(R.id.widget, settingsActivityIntent);
 
         // Instruct the widget manager to update the widget
         appWidgetManager.updateAppWidget(appWidgetId, views);
-
-/*
-Intent configIntent = new Intent(context, YmdhmsAppWidgetConfigure.class)
-        .putExtras(extras)
-        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);       /// TODO: check??
-context.startActivity(configIntent);
-*/
-/*
-        Intent settingsIntent = new Intent(context, YmdhmsAppWidgetConfigure.class);
-        Bundle extras = new Bundle();
-        extras.putInt(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-        settingsIntent.putExtras(extras);
-
-        // The stack builder object will contain an artificial back stack for the started Activity.
-        // This ensures that navigating backward from the Activity leads out of
-        // your application to the Home screen.
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-        // Adds the back stack for the Intent (but not the Intent itself)
-        stackBuilder.addParentStack(MainActivity.class);
-        // Adds the Intent that starts the Activity to the top of the stack
-        stackBuilder.addNextIntent(settingsIntent);
-//        PendingIntent settingsPendingIntent =
-//                stackBuilder.getPendingIntent(
-//                        0,
-//                        PendingIntent.FLAG_UPDATE_CURRENT
-//                );
-        stackBuilder.startActivities();
-*/
     }
+
+
+    /**
+     hmsOptId:               Representing
+     hms_opt_12hr:       10:20 PM   (default)
+     hms_opt_24hr:       22:20
+     */
+    static String formatTime(long dateInMillis, int ymdOptId) {
+        String ymdFormat;
+
+        switch (ymdOptId) {
+            case R.id.hms_opt_24hr:
+                ymdFormat = "HH:mm" ;
+                break;
+            default: // fall thru
+            case R.id.hms_opt_12hr:
+                ymdFormat = "KK:mm a" ;
+                break;
+        }
+
+        SimpleDateFormat timeFormat = new SimpleDateFormat(ymdFormat);
+        return timeFormat.format(dateInMillis);
+    }
+
+    /**
+        ymdOptId:               Representing
+            ymd_opt_dash_mmm:   Friday, 15-Aug-1947
+            ymd_opt_dash_mm:    Friday, 15-08-1947
+            ymd_opt_mmmm:       Friday, August 15   (default)
+            ymd_opt_mdy:        Friday, 08/15/1947
+    */
+    static String formatDate(long dateInMillis, int ymdOptId) {
+        String ymdFormat;
+
+        switch (ymdOptId) {
+            case R.id.ymd_opt_dash_mmm:
+                ymdFormat = "EEEE, dd-MMM-yyyy" ;
+                break;
+            case R.id.ymd_opt_dash_mm:
+                ymdFormat = "EEEE, dd-MM-yyyy" ;
+                break;
+            case R.id.ymd_opt_mdy:
+                ymdFormat = "EEEE, MM/dd/yyyy" ;
+                break;
+            default: // fall thru
+            case R.id.ymd_opt_mmmm:
+                ymdFormat = "EEEE, MMMM dd" ;
+                break;
+        }
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat(ymdFormat);
+        return dateFormat.format(dateInMillis);
+    }
+
 }
 
 /*
@@ -173,3 +189,4 @@ TimeFormat
     LONG        hh:mm:ss AM GMT+05:30
     FULL        hh:mm:ss AM Indian Standard Time
 */
+

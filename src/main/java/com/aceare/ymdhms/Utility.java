@@ -20,8 +20,4 @@ public class Utility {
         return dayFormat.format(dateInMillis);
     }
 
-    static String formatDate(long dateInMillis, int dateStyle) {
-        Date date = new Date(dateInMillis);
-        return DateFormat.getDateInstance(dateStyle).format(date);
-    }
 }
