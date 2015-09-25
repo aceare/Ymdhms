@@ -20,7 +20,7 @@ public class YmdhmsAppWidgetSettings extends Activity {
 
     public YmdhmsAppWidgetSettings() {
         super();
-        Log.v(LOG_TAG, "YmdhmsAppWidgetSettings()");
+//Log.v(LOG_TAG, "YmdhmsAppWidgetSettings()");
     }
 
 /*
@@ -38,7 +38,7 @@ public class YmdhmsAppWidgetSettings extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.v(LOG_TAG, "YmdhmsAppWidgetSettings: onCreate()");
+//Log.v(LOG_TAG, "YmdhmsAppWidgetSettings: onCreate()");
         super.onCreate(savedInstanceState);
 
         // Set the result to CANCELED.  This will cause the widget host to cancel
@@ -80,7 +80,7 @@ public class YmdhmsAppWidgetSettings extends Activity {
                 appWidgetId = extras.getInt(
                         AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
             }
-Log.v(LOG_TAG, "onClick: appWidgetId=" + appWidgetId + ", this=" + context);
+//Log.v(LOG_TAG, "onClick: appWidgetId=" + appWidgetId + ", this=" + context);
 
             // When the button is clicked, save options in our prefs
             savePrefHmsOptId(context, appWidgetId,
@@ -98,6 +98,7 @@ Log.v(LOG_TAG, "onClick: appWidgetId=" + appWidgetId + ", this=" + context);
         }
     };
 
+    /*
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -110,6 +111,7 @@ Log.v(LOG_TAG, "onClick: appWidgetId=" + appWidgetId + ", this=" + context);
         }
         Log.v(LOG_TAG, "YmdhmsAppWidgetSettings: onNewIntent() mAppWidgetId=" + appWidgetId + ", context=" + this);
     }
+    */
 
     static final String getPrefWidgetResourceKey(Context context, int appWidgetId, int resourceId) {
         return "Widget" + appWidgetId + context.getString(resourceId);
@@ -120,12 +122,12 @@ Log.v(LOG_TAG, "onClick: appWidgetId=" + appWidgetId + ", this=" + context);
         SharedPreferences sharedPref = context.getSharedPreferences(SHARED_PREFS_NAME, 0);
         int hmsOptId = sharedPref.getInt(getPrefWidgetResourceKey(context, appWidgetId, R.string.hms_opt_key),
                 R.id.hms_opt_12hr); // default selection
-        Log.v(LOG_TAG, "readPrefHmsOptId: appWidgetId=" + appWidgetId + ", hmsOptId=" + hmsOptId);
+//Log.v(LOG_TAG, "readPrefHmsOptId: appWidgetId=" + appWidgetId + ", hmsOptId=" + hmsOptId);
         return hmsOptId;
     }
 
     static void savePrefHmsOptId(Context context, int appWidgetId, int hmsOptId) {
-        Log.v(LOG_TAG, "savePrefHmsOptId: appWidgetId=" + appWidgetId + ", hmsOptId=" + hmsOptId);
+//Log.v(LOG_TAG, "savePrefHmsOptId: appWidgetId=" + appWidgetId + ", hmsOptId=" + hmsOptId);
         SharedPreferences.Editor sharedPref = context.getSharedPreferences(SHARED_PREFS_NAME, 0).edit();
         sharedPref.putInt(getPrefWidgetResourceKey(context, appWidgetId, R.string.hms_opt_key),
                 hmsOptId)
@@ -137,12 +139,12 @@ Log.v(LOG_TAG, "onClick: appWidgetId=" + appWidgetId + ", this=" + context);
         SharedPreferences sharedPref = context.getSharedPreferences(SHARED_PREFS_NAME, 0);
         int ymdOptId = sharedPref.getInt(getPrefWidgetResourceKey(context, appWidgetId, R.string.ymd_opt_key),
                 R.id.ymd_opt_dash_mmm); // default selection
-        Log.v(LOG_TAG, "readPrefYmdOptId: appWidgetId=" + appWidgetId + ", ymdOptId=" + ymdOptId);
+//Log.v(LOG_TAG, "readPrefYmdOptId: appWidgetId=" + appWidgetId + ", ymdOptId=" + ymdOptId);
         return ymdOptId;
     }
 
     static void savePrefYmdOptId(Context context, int appWidgetId, int ymdOptId) {
-        Log.v(LOG_TAG, "savePrefYmdOptId: appWidgetId=" + appWidgetId + ", ymdOptId=" + ymdOptId);
+//Log.v(LOG_TAG, "savePrefYmdOptId: appWidgetId=" + appWidgetId + ", ymdOptId=" + ymdOptId);
         SharedPreferences.Editor sharedPref = context.getSharedPreferences(SHARED_PREFS_NAME, 0).edit();
         sharedPref.putInt(getPrefWidgetResourceKey(context, appWidgetId, R.string.ymd_opt_key),
                 ymdOptId)

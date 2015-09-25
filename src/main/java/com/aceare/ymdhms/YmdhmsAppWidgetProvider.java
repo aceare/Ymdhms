@@ -13,6 +13,7 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 
 /**
@@ -21,15 +22,15 @@ import java.text.SimpleDateFormat;
 public class YmdhmsAppWidgetProvider extends AppWidgetProvider {
 
     private static final String LOG_TAG = YmdhmsAppWidgetProvider.class.getSimpleName();
+//    private static AlarmReceiver mAlarmReceiver = null;
 
-    /*
+/*
     @Override
     public void onReceive(Context context, Intent intent) {
         final String action = intent.getAction();
         final int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
-                    AppWidgetManager.INVALID_APPWIDGET_ID);
+                AppWidgetManager.INVALID_APPWIDGET_ID);
         Log.v(LOG_TAG, "onReceive action=" + action + ", appWidgetId=" + appWidgetId);
-
         super.onReceive(context, intent);
     }
 */
@@ -63,25 +64,42 @@ public class YmdhmsAppWidgetProvider extends AppWidgetProvider {
     @Override
     public void onEnabled(Context context) {
         // Enter relevant functionality for when the first widget is created
-Log.v(LOG_TAG, "onEnabled");
-
+        Log.v(LOG_TAG, "onEnabled(): Setting ALARM_SERVICE");
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-//should trigger at clock 60 sec. alarmManager.setRepeating(AlarmManager.RTC, System.currentTimeMillis(), 60*1000, createAlarmPendingIntent(context));
+        // Alarm should trigger at every clock minute (most of the time, that may not be 60sec after current time).
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        calendar.set(Calendar.SECOND, 0);
+        calendar.add(Calendar.MINUTE, 1);
+        alarmManager.setRepeating(AlarmManager.RTC, calendar.getTimeInMillis(), 60 * 1000, createAlarmPendingIntent(context));
+
+        /*
+        Log.v(LOG_TAG, "onEnabled(): Registering ACTION_TIME_TICK");
+        mAlarmReceiver = new AlarmReceiver();
+        context.registerReceiver(mAlarmReceiver,
+                new IntentFilter(Intent.ACTION_TIME_TICK));
+        */
     }
 
     @Override
     public void onDisabled(Context context) {
         // Enter relevant functionality for when the last widget is disabled
-Log.v(LOG_TAG, "onDisabled");
+        Log.v(LOG_TAG, "onDisabled(): Canceling ALARM_SERVICE");
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(createAlarmPendingIntent(context));
+
+        /*
+        Log.v(LOG_TAG, "onDisabled(): Unregistering ACTION_TIME_TICK");
+        context.unregisterReceiver(mAlarmReceiver);
+        mAlarmReceiver = null;
+        */
     }
 
     public static class AlarmReceiver extends BroadcastReceiver {
         public void onReceive(Context context, Intent intent) {
             long currentTime = System.currentTimeMillis();
-            String dayofweek = "T5 " + currentTime;
-Log.v(LOG_TAG, dayofweek);
+            final String timetick = "T5 " + currentTime;
+Log.v(LOG_TAG, timetick);
 
             //ComponentName thisAppWidget = new ComponentName(context.getPackageName(), YmdhmsAppWidgetProvider.class.getSimpleName());
             ComponentName thisAppWidget = new ComponentName(context, YmdhmsAppWidgetProvider.class);
@@ -118,7 +136,9 @@ Log.v(LOG_TAG, "updateAppWidget(): appWidgetId=" + appWidgetId);
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.ymdhms_app_widget);
 
         long currentTimeInMilli = System.currentTimeMillis();
-        views.setTextViewText(R.id.hms, formatTime(currentTimeInMilli,
+        views.setTextViewText(R.id.hms, formatTimeHours(currentTimeInMilli,
+                YmdhmsAppWidgetSettings.readPrefHmsOptId(context, appWidgetId)));
+        views.setTextViewText(R.id.ampm, formatTimeAMPM(currentTimeInMilli,
                 YmdhmsAppWidgetSettings.readPrefHmsOptId(context, appWidgetId)));
         views.setTextViewText(R.id.dmy, formatDate(currentTimeInMilli,
                 YmdhmsAppWidgetSettings.readPrefYmdOptId(context, appWidgetId)));
@@ -131,13 +151,12 @@ Log.v(LOG_TAG, "updateAppWidget(): appWidgetId=" + appWidgetId);
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
 
-
     /**
      hmsOptId:               Representing
-     hms_opt_12hr:       10:20 PM   (default)
+     hms_opt_12hr:       10:20 (without AM/PM)   (default)
      hms_opt_24hr:       22:20
      */
-    static String formatTime(long dateInMillis, int ymdOptId) {
+    static String formatTimeHours(long dateInMillis, int ymdOptId) {
         String ymdFormat;
 
         switch (ymdOptId) {
@@ -146,7 +165,29 @@ Log.v(LOG_TAG, "updateAppWidget(): appWidgetId=" + appWidgetId);
                 break;
             default: // fall thru
             case R.id.hms_opt_12hr:
-                ymdFormat = "KK:mm a" ;
+                ymdFormat = "KK:mm" ;
+                break;
+        }
+
+        SimpleDateFormat timeFormat = new SimpleDateFormat(ymdFormat);
+        return timeFormat.format(dateInMillis);
+    }
+
+    /**
+     hmsOptId:               Representing
+     hms_opt_12hr:       AM/PM   (default)
+     hms_opt_24hr:       /none/
+     */
+    static String formatTimeAMPM(long dateInMillis, int ymdOptId) {
+        String ymdFormat;
+
+        switch (ymdOptId) {
+            case R.id.hms_opt_24hr:
+                ymdFormat = "" ;
+                break;
+            default: // fall thru
+            case R.id.hms_opt_12hr:
+                ymdFormat = "a" ;
                 break;
         }
 
