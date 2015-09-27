@@ -165,7 +165,7 @@ Log.v(LOG_TAG, "updateAppWidget(): appWidgetId=" + appWidgetId);
                 break;
             default: // fall thru
             case R.id.hms_opt_12hr:
-                ymdFormat = "KK:mm" ;
+                ymdFormat = "hh:mm" ;
                 break;
         }
 
@@ -199,7 +199,7 @@ Log.v(LOG_TAG, "updateAppWidget(): appWidgetId=" + appWidgetId);
         ymdOptId:               Representing
             ymd_opt_dash_mmm:   Friday, 15-Aug-1947
             ymd_opt_dash_mm:    Friday, 15-08-1947
-            ymd_opt_mmmm:       Friday, August 15   (default)
+            ymd_opt_mmmm:       Fri, August 15   (default)
             ymd_opt_mdy:        Friday, 08/15/1947
     */
     static String formatDate(long dateInMillis, int ymdOptId) {
@@ -217,7 +217,7 @@ Log.v(LOG_TAG, "updateAppWidget(): appWidgetId=" + appWidgetId);
                 break;
             default: // fall thru
             case R.id.ymd_opt_mmmm:
-                ymdFormat = "EEEE, MMMM dd" ;
+                ymdFormat = "EEE, MMMM dd" ;
                 break;
         }
 

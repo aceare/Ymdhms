@@ -7,7 +7,7 @@
     <string name="ymd_opt_dash_mmm">Friday, 15-Aug-1947</string>
     <string name="ymd_opt_dash_mm">Friday, 15-08-1947</string>
     <string name="ymd_opt_mdy">Friday, 08/15/1947</string>
-    <string name="ymd_opt_mmmm">Friday, August 15</string>
+    <string name="ymd_opt_mmmm">Fri, August 15</string>
 
     <string name="hms_opt_key">hms_opt_key</string>
     <string name="hms_opt_label">Select format for Time:</string>
